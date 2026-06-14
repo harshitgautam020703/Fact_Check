@@ -2,7 +2,7 @@
 
 > AI-powered claim verification engine that reads PDF documents, extracts factual claims, and cross-references them against live web data.
 
-🌐 **[Live App →](https://your-app.streamlit.app)** · 🎬 **[Demo Video →](https://your-demo-link)**
+🌐 **[Live App →]([https://your-app.streamlit.app](https://fact-check-harsit121.streamlit.app/))** · 🎬 **[Demo Video →]([https://your-demo-link](https://drive.google.com/file/d/1fUoRGLoyTyYhuCQfvcJHn-2xiuFvbkat/view?usp=drive_link))**
 
 ---
 
