@@ -1,38 +1,19 @@
-"""
-Verdict Engine Module
-Uses OpenRouter API (OpenAI-compatible) to compare claims against web evidence and produce verdicts.
-Includes model fallback and retry logic for rate limits.
-"""
-
 from openai import OpenAI
 import json
 import re
 import time
 
-# Verified free models on OpenRouter — tried in order until one works
 FALLBACK_MODELS = [
+    "openai/gpt-3.5-turbo",
     "meta-llama/llama-3.3-70b-instruct:free",
     "google/gemini-2.0-flash-lite-preview-02-05:free",
     "mistralai/mistral-7b-instruct:free"
 ]
 
-MAX_RETRIES = 2  # Per model
+MAX_RETRIES = 2
 
 
 def get_verdict(claim: str, evidence: list[dict], client: OpenAI) -> dict:
-    """
-    Use an LLM via OpenRouter to compare a claim against web evidence and produce a verdict.
-    Tries multiple free models as fallback if one fails.
-    
-    Args:
-        claim: The factual claim to judge.
-        evidence: List of dicts with 'content' and 'url' keys from web search.
-        client: An initialized OpenAI client configured for OpenRouter.
-    
-    Returns:
-        A dict with 'verdict', 'confidence', 'explanation', 'correct_fact', and 'sources' keys.
-    """
-    # Format evidence with sources
     evidence_text = ""
     sources = []
     for i, e in enumerate(evidence[:4], 1):
@@ -74,7 +55,6 @@ Return ONLY valid JSON with no markdown formatting, no code blocks, no additiona
                 
                 raw = response.choices[0].message.content
                 
-                # Try to extract JSON from the response
                 json_match = re.search(r'\{.*\}', raw, re.DOTALL)
                 if json_match:
                     result = json.loads(json_match.group())
@@ -89,9 +69,7 @@ Return ONLY valid JSON with no markdown formatting, no code blocks, no additiona
                     first_error = e
                 error_str = str(e)
                 
-                # Check for hard account limits (do not retry or fallback)
                 if "free-models-per-day" in error_str or "credits" in error_str.lower():
-                    import re
                     match = re.search(r"'message':\s*'([^']+)'", error_str)
                     clean_msg = match.group(1) if match else error_str
                     return {
@@ -102,19 +80,15 @@ Return ONLY valid JSON with no markdown formatting, no code blocks, no additiona
                         "sources": sources[:3]
                     }
                 
-                # If rate limited (429), wait and retry same model
                 if "429" in error_str:
                     time.sleep(5 * (attempt + 1))
                     continue
-                # If model not found (404), skip to next model immediately
                 elif "404" in error_str or "endpoints" in error_str.lower():
                     break
                 else:
-                    break  # Other error, try next model
+                    break
     
-    # All models failed
     error_msg = str(first_error)
-    import re
     match = re.search(r"'message':\s*'([^']+)'", error_msg)
     clean_msg = match.group(1) if match else error_msg
     
