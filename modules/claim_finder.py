@@ -9,7 +9,7 @@ import json
 import re
 import time
 
-# Verified free models on OpenRouter — tried in order until one works
+
 FALLBACK_MODELS = [
     "meta-llama/llama-3.3-70b-instruct:free",
     "google/gemini-2.0-flash-lite-preview-02-05:free",
@@ -36,7 +36,7 @@ def extract_claims(text: str, api_key: str) -> list[dict]:
         api_key=api_key,
         timeout=15.0,
         default_headers={
-            "HTTP-Referer": "https://github.com/Ravi-108/GEO-FACTCHECK",
+            "HTTP-Referer": "https://github.com/harshitgautam020703/Fact_Check",
             "X-Title": "GEO Fact-Check Agent",
         }
     )
